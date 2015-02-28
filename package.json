@@ -1,0 +1,11 @@
+{
+    "name": "ParkdServer",
+    "version": "0.1.0",
+    "description": "Server backend for Parkd apps",
+    "main": "app.js",
+    "license": "MIT",
+
+    "dependencies": {
+        "nconf": "0.7.1"
+    }
+}
