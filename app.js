@@ -16,7 +16,9 @@ var sql = {
     'changePassword': "UPDATE users SET pass=? WHERE id=?",
     'delUser': "DELETE FROM users WHERE id=?",
     'getOpenSpots': "SELECT * FROM spots WHERE occupant IS NULL",
-    'updateSpot': "UPDATE spots SET filled=? WHERE id IN (?)"
+    'updateSpot': "UPDATE spots SET filled=? WHERE id IN (?)",
+    'getSpot': "SELECT * FROM spots WHERE id=?",
+    'addTime': "UPDATE spots SET occupant=?,expiration=? WHERE id=?"
 }
 
 // error functions
@@ -219,6 +221,45 @@ httpPaths[apiRoot + "/cameraPush"] = function(req, res) { // register endpoint
 
             res.writeHead(200);
             res.end();
+        });
+    }
+    else
+        badMethod(["POST"],  res);
+}
+
+httpPaths[apiRoot + "/addTime"] = function(req, res) { // register endpoint
+    if (req.method == "POST")
+    {
+        req.on('data', function(data) { 
+            post = JSON.parse(""+data); // userId, spotId, secondsAdded
+
+            console.log(post);
+            
+            // Get connection to database
+            sqlPool.getConnection(function(err, con) {
+                con.query(sql.getSpot, [post.spotId], function(err, spotRows) {
+                    var newSeconds = 0;
+
+                    var oldDate = new Date(spotRows[0].expiration);
+                    if (oldDate && (oldDate.getTime()/1000) >= (new Date().getTime()/1000)) // NOT NULL
+                    {
+                        console.log("AGH! - "+oldDate);
+                        newSeconds = (oldDate.getTime()) + (secondsAdded*1000);
+                    }
+                    else
+                    {
+                        console.log(new Date().getTime());
+                        newSeconds = ((new Date()).getTime()) + (post.secondsAdded*1000);
+                    }
+
+                    console.log(newSeconds);
+
+                    con.query(sql.addTime, [post.userId, new Date(newSeconds), post.spotId], function(err, blah){});
+
+                    sendJson(res, 200, { "expiration": newSeconds });
+                });
+                con.release();
+            });
         });
     }
     else
