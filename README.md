@@ -19,6 +19,6 @@ It is also live at http://parkd.abrarsyed.me. All endpoints are in the pattern `
  
 #### deleteUser
 - **method:** POST
-- **request:** ```{ "email": "someEmail@email.com"}``` 
+- **request:** ```{ "id": ####}``` 
 - **replies:**
 - **Success:** Code 200

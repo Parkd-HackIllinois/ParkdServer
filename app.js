@@ -14,7 +14,7 @@ var sql = {
     'userByEmail': "SELECT * FROM users WHERE email=?",
     'addUser': "INSERT INTO users (email, pass, salt) VALUES (?, ?, ?)",
     'changePassword': "UPDATE users SET pass=? WHERE id=?",
-    'delUser': "DELETE FROM users WHERE email=?"
+    'delUser': "DELETE FROM users WHERE id=?"
 }
 
 // error functions
@@ -128,7 +128,7 @@ httpPaths[apiRoot + "/deleteUser"] = function(req, res) { // register endpoint
 
             // sql stuff
             sqlPool.getConnection(function(err, con) {
-                con.query(sql.delUser, [post.email], function(err, result) {
+                con.query(sql.delUser, [post.id], function(err, result) {
                         res.writeHead(200);
                         res.end();
                 });
