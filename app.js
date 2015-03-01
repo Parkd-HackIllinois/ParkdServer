@@ -15,7 +15,8 @@ var sql = {
     'addUser': "INSERT INTO users (email, pass, salt) VALUES (?, ?, ?)",
     'changePassword': "UPDATE users SET pass=? WHERE id=?",
     'delUser': "DELETE FROM users WHERE id=?",
-    'getOpenSpots': "SELECT * FROM spots WHERE occupant IS NULL"
+    'getOpenSpots': "SELECT * FROM spots WHERE occupant IS NULL",
+    'updateSpot': "UPDATE spots SET filled=? WHERE id IN (?)"
 }
 
 // error functions
@@ -182,6 +183,42 @@ httpPaths[apiRoot + "/getOpenSpots"] = function(req, res) { // register endpoint
                 });
             con.release();
             });
+        });
+    }
+    else
+        badMethod(["POST"],  res);
+}
+
+httpPaths[apiRoot + "/cameraPush"] = function(req, res) { // register endpoint
+    if (req.method == "POST")
+    {
+        req.on('data', function(data) { 
+            post = JSON.parse(""+data);
+
+            // sql stuff
+            sqlPool.getConnection(function(err, con) {
+                if (post.open)
+                {
+                    con.query(sql.updateSpot, [0, post.open], function(err, result) {
+                        if (err)
+                            console.log(err);
+                    });
+                }
+
+                if (post.closed)
+                {
+                    con.query(sql.updateSpot, [1, post.closed], function(err, result) {
+                        if (err)
+                            console.log(err);
+                    });
+                }
+
+                con.release();
+            });
+
+
+            res.writeHead(200);
+            res.end();
         });
     }
     else
