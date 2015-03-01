@@ -5,7 +5,8 @@
     "mysql": {
         "host": "localhost",
         "port": 3306,
-        "user": "parkd",
-        "password": "somepassWord"
+        "database": "parkdServer",
+        "user": "parkdServer",
+        "password": "JZh5m3KuBpa4M2xB"
     }
 }

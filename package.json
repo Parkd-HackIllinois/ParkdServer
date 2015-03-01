@@ -6,6 +6,11 @@
     "license": "MIT",
 
     "dependencies": {
-        "nconf": "0.7.1"
+        "nconf": "0.7.1",
+        "mysql": "2.5.5",
+        "node-gyp": "0.8.1"
+    },
+    "devDependencies": {
+        "node-dev": "2.1.6"
     }
 }
