@@ -12,7 +12,7 @@ var sqlPool = mysql.createPool(nconf.get("mysql"));
 var sql = {
     'userById': "SELECT * FROM users WHERE id=?",
     'userByEmail': "SELECT * FROM users WHERE email=?",
-    'addUser': "INSERT INTO users (email, pass) VALUES (?, ?)",
+    'addUser': "INSERT INTO users (email, pass, salt) VALUES (?, ?, ?)",
     'changePassword': "UPDATE users SET pass=? WHERE id=?"
 }
 
@@ -21,8 +21,8 @@ var errorFunc = function(res) {
     res.writeHead(400); // bad request
     res.end();
 };
-var sendError = function(code, reason, res) {
-    res.writeHead(204, reason);
+var sendError = function(reason, res) {
+    res.writeHead(400, reason);
     res.end('{ "error":"'+reason+'" }');
 }
 
@@ -32,12 +32,13 @@ var bcrypt = require('bcrypt');
 // http path functions
 var apiRoot = "/api/0.1";
 var httpPaths = {}
-httpPaths[apiRoot + "/login"] = function(req, res) {
+
+httpPaths[apiRoot + "/login"] = function(req, res) { // login endpoint
     if (req.method == "POST")
     {
         req.on('data', function(data) { 
             post = JSON.parse(""+data);
-            console.log(post);
+            
             // sql stuff
             sqlPool.getConnection(function(err, con) {
                 con.query(sql.userByEmail, [post.email], function(err, rows) {
@@ -45,27 +46,48 @@ httpPaths[apiRoot + "/login"] = function(req, res) {
                     {
                         var salt = rows[0].salt;
                         var sqlPass = rows[0].pass;
-                        salt = bcrypt.genSaltSync(10);
-                        console.log(salt);
                         var calculated = bcrypt.hashSync(post.pass, salt);
                         if (calculated === sqlPass)
                         {
-                            console.log("GOOD!")
                             res.writeHead(200);
-                            res.end('{ "id":'+rows[0].id);
+                            res.end('{ "id":'+rows[0].id + ' }');
                         }
                         else
                         {
-                            console.log("BAD!")
-                            sendError(403, "Wrong Password", res);
+                            sendError("Wrong Password", res);
                         }
                     }
                     else
                     {
-                        sendError(204, "email not found", res);
+                        sendError("email not found", res);
                     }
                 });
                 con.release();
+            });
+        });
+    }
+    else
+        errorFunc(res);
+}
+
+
+httpPaths[apiRoot + "/register"] = function(req, res) { // register endpoint
+    if (req.method == "POST")
+    {
+        req.on('data', function(data) { 
+            post = JSON.parse(""+data);
+            console.log(post);
+
+            //gen pass and salt
+            var salt = bcrypt.genSaltSync(10);
+            var hashPass = bcrypt.hashSync(post.pass, salt)
+
+            // sql stuff
+            sqlPool.getConnection(function(err, con) {
+                con.query(sql.addUser, [post.email, hashPass, salt], function(err, rows){  });
+                con.release();
+                res.writeHead(201);
+                res.end();
             });
         });
     }
