@@ -13,7 +13,8 @@ var sql = {
     'userById': "SELECT * FROM users WHERE id=?",
     'userByEmail': "SELECT * FROM users WHERE email=?",
     'addUser': "INSERT INTO users (email, pass, salt) VALUES (?, ?, ?)",
-    'changePassword': "UPDATE users SET pass=? WHERE id=?"
+    'changePassword': "UPDATE users SET pass=? WHERE id=?",
+    'delUser': "DELETE FROM users WHERE email=?"
 }
 
 // error functions
