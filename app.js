@@ -17,13 +17,31 @@ var sql = {
 }
 
 // error functions
-var errorFunc = function(res) {
-    res.writeHead(400); // bad request
+var die = function(res) {
+    res.writeHead(500); // I give up...
     res.end();
 };
-var sendError = function(reason, res) {
-    res.writeHead(400, reason);
-    res.end('{ "error":"'+reason+'" }');
+var badMethod = function(res, methods) {
+    res.writeHead(405, { "Allow": res.join(', ')});
+    res.end();
+}
+var sendError = function(res, reason) {
+    var string = JSON.stringify( { 'error': reason });
+    res.writeHead(400, reason, {
+        "Content-Type": "application/json",
+        "Content-Language": "en",
+        "Content-Length": Buffer.byteLength(string, 'utf8')
+    });
+    res.end(string);
+}
+var sendJson = function(res, code, data) {
+    var string = JSON.stringify(data);
+    res.writeHead(code, {
+        "Content-Type": "application/json",
+        "Content-Language": "en",
+        "Content-Length": Buffer.byteLength(string, 'utf8')
+    });
+    res.end(string);
 }
 
 // password encyrption
@@ -49,17 +67,16 @@ httpPaths[apiRoot + "/login"] = function(req, res) { // login endpoint
                         var calculated = bcrypt.hashSync(post.pass, salt);
                         if (calculated === sqlPass)
                         {
-                            res.writeHead(200);
-                            res.end('{ "id":'+rows[0].id + '}');
+                            sendJson(res, 200, { 'id': rows[0].id });
                         }
                         else
                         {
-                            sendError("Wrong password", res);
+                            sendError(res, "Wrong password");
                         }
                     }
                     else
                     {
-                        sendError("Email not found", res);
+                        sendError(res, "Email not found");
                     }
                 });
                 con.release();
@@ -67,7 +84,7 @@ httpPaths[apiRoot + "/login"] = function(req, res) { // login endpoint
         });
     }
     else
-        errorFunc(res);
+        badMethod(["POST"],  res);
 }
 
 
@@ -91,9 +108,7 @@ httpPaths[apiRoot + "/register"] = function(req, res) { // register endpoint
                     }
                     else
                     {
-                        var id = result.insertId;
-                        res.writeHead(201);
-                        res.end('{ "id":'+id+'}');
+                        sendJson(res, 201, { 'id': result.insertId });
                     }
                 });
                 con.release();
@@ -101,7 +116,7 @@ httpPaths[apiRoot + "/register"] = function(req, res) { // register endpoint
         });
     }
     else
-        errorFunc(res);
+        badMethod(["POST"],  res);
 }
 
 // actual HTTP listenning
@@ -117,7 +132,7 @@ var server = http.createServer(function(req, res) {
         }
         catch(e)
         {
-            errorFunc(res);
+            die(res);
         }
     }
     else
