@@ -14,7 +14,8 @@ var sql = {
     'userByEmail': "SELECT * FROM users WHERE email=?",
     'addUser': "INSERT INTO users (email, pass, salt) VALUES (?, ?, ?)",
     'changePassword': "UPDATE users SET pass=? WHERE id=?",
-    'delUser': "DELETE FROM users WHERE id=?"
+    'delUser': "DELETE FROM users WHERE id=?",
+    'getOpenSpots': "SELECT * FROM spots WHERE occupant IS NULL"
 }
 
 // error functions
@@ -131,6 +132,53 @@ httpPaths[apiRoot + "/deleteUser"] = function(req, res) { // register endpoint
                 con.query(sql.delUser, [post.id], function(err, result) {
                         res.writeHead(200);
                         res.end();
+                });
+            con.release();
+            });
+        });
+    }
+    else
+        badMethod(["POST"],  res);
+}
+
+httpPaths[apiRoot + "/getOpenSpots"] = function(req, res) { // register endpoint
+    if (req.method == "POST")
+    {
+        req.on('data', function(data) { 
+            post = JSON.parse(""+data); // long, lata
+
+            // 1/2 mile = 0.009 long/lat
+            var startLong = post.longitude - .009;
+            var endLong = post.longitude + .009;
+            var startLat = post.latitude - .009;
+            var endLat = post.latitude + .009;
+
+            // swap vars to ensure start is smaller
+            if (endLong < startLong)
+                startLong = [endLong, endLong = startLong][0];
+            if (endLat < startLat)
+                startLat = [endLat, endLat = startLat][0];
+
+            // sql stuff
+            sqlPool.getConnection(function(err, con) {
+                con.query(sql.getOpenSpots, [startLong, endLong, startLat, endLat], function(err, rows) {
+
+                    var output = { 'spots': [], 'suggested': [] };
+                    for (index in rows)
+                    {
+                        if (rows[index].long < startLong || rows[index].long > endLong)
+                            continue;
+
+                        if (rows[index].lat < startLat || rows[index].lat > endLat)
+                            continue;
+                        
+                        if (rows[index].filled)
+                            output.suggested.push(rows[index].id);
+
+                        output.spots.push(rows[index].id);
+                    }
+
+                    sendJson(res, 200, output);
                 });
             con.release();
             });

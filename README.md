@@ -22,3 +22,8 @@ It is also live at http://parkd.abrarsyed.me. All endpoints are in the pattern `
 - **request:** ```{ "id": ####}``` 
 - **replies:**
 - **Success:** Code 200
+
+#### getOpenSpots
+- **method:** POST
+- **request:** ```{ "longitude": 0.0, "latitude": 0.0 }``` 
+- **replies:** Code 200 ```{ "spots": [ #, #], "suggested": [#, #] } ```
