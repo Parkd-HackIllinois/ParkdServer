@@ -50,16 +50,16 @@ httpPaths[apiRoot + "/login"] = function(req, res) { // login endpoint
                         if (calculated === sqlPass)
                         {
                             res.writeHead(200);
-                            res.end('{ "id":'+rows[0].id + ' }');
+                            res.end('{ "id":'+rows[0].id + '}');
                         }
                         else
                         {
-                            sendError("Wrong Password", res);
+                            sendError("Wrong password", res);
                         }
                     }
                     else
                     {
-                        sendError("email not found", res);
+                        sendError("Email not found", res);
                     }
                 });
                 con.release();
@@ -76,7 +76,6 @@ httpPaths[apiRoot + "/register"] = function(req, res) { // register endpoint
     {
         req.on('data', function(data) { 
             post = JSON.parse(""+data);
-            console.log(post);
 
             //gen pass and salt
             var salt = bcrypt.genSaltSync(10);
@@ -84,10 +83,20 @@ httpPaths[apiRoot + "/register"] = function(req, res) { // register endpoint
 
             // sql stuff
             sqlPool.getConnection(function(err, con) {
-                con.query(sql.addUser, [post.email, hashPass, salt], function(err, rows){  });
+                con.query(sql.addUser, [post.email, hashPass, salt], function(err, result) {
+                    if (err)
+                    {
+                        res.writeHead(409);
+                        res.end();
+                    }
+                    else
+                    {
+                        var id = result.insertId;
+                        res.writeHead(201);
+                        res.end('{ "id":'+id+'}');
+                    }
+                });
                 con.release();
-                res.writeHead(201);
-                res.end();
             });
         });
     }
