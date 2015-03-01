@@ -8,7 +8,8 @@
     "dependencies": {
         "nconf": "0.7.1",
         "mysql": "2.5.5",
-        "node-gyp": "0.8.1"
+        "node-gyp": "*",
+        "bcrypt": "*"
     },
     "devDependencies": {
         "node-dev": "2.1.6"
