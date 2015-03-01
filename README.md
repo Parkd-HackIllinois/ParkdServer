@@ -16,3 +16,9 @@ It is also live at http://parkd.abrarsyed.me. All endpoints are in the pattern `
  - **Success:** Code 200 ```{ "id": ### } ```
  - **No such user:** Code 400 ```{ "error": "Email not found"}```
  - **Wrong pass:** Code 400 ```{ "error": "Wrong password"}```
+ 
+#### deleteUser
+- **method:** POST
+- **request:** ```{ "email": "someEmail@email.com"}``` 
+- **replies:**
+- **Success:** Code 200

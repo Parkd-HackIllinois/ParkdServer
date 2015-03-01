@@ -120,6 +120,26 @@ httpPaths[apiRoot + "/register"] = function(req, res) { // register endpoint
         badMethod(["POST"],  res);
 }
 
+httpPaths[apiRoot + "/deleteUser"] = function(req, res) { // register endpoint
+    if (req.method == "POST")
+    {
+        req.on('data', function(data) { 
+            post = JSON.parse(""+data);
+
+            // sql stuff
+            sqlPool.getConnection(function(err, con) {
+                con.query(sql.delUser, [post.email], function(err, result) {
+                        res.writeHead(200);
+                        res.end();
+                });
+            con.release();
+            });
+        });
+    }
+    else
+        badMethod(["POST"],  res);
+}
+
 // actual HTTP listenning
 var urlParser = require('url')
 var http = require('http');
