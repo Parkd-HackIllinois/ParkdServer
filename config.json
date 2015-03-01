@@ -8,5 +8,9 @@
         "database": "parkdServer",
         "user": "parkdServer",
         "password": "JZh5m3KuBpa4M2xB"
+    },
+    "capitalOne": {
+        "enterpriseKey": "someKey",
+        "customerKey": "someOtherKey"
     }
 }
